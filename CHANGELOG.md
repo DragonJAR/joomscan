@@ -2,11 +2,20 @@ OWASP JoomScan 0.0.8 [2026 Refresh]
 ============
 * Core vulnerability database rebuilt with all 221 official JSST advisories
   (2017-2026): version-range matcher (ex. "4.0.0-4.2.7"), CVE / Type / Description /
-  Fixed-version / NVD + Security Centre references
-* Shared engine core/lib.pl (DRY): version parsing, version-range matching, EOL
-  matrix (1.x-6.x), soft-404 classification and HTTP probe helpers reused by the
-  directory listing, sensitive files, config finder, API check, cp finder and
-  the new extension auditor
+  Fixed-version / NVD + Security Centre references, up to August 2026 (Joomla 6.1.3)
+* Shared engine core/lib.pl (DRY): multi-tier version detection (Tiers 1-6), baseline
+  calibration against soft-404 portals, and root domain fallback for subpath targets
+* Server baseline calibration (calibrate_target_baseline): eliminates false positives
+  on catch-all HTTP 200 responses by fingerprinting non-existent probe title and length
+* Syntactic content verification (verify_sensitive_file): requires authentic signatures
+  (class JConfig, [core], .env key-pairs, admin login tokens) before confirming leaks
+* Modernized offline HTML report dashboard: single-file, responsive, zero external CDNs,
+  dynamic 5-dimension security posture scoring, and 24-hour remediation plans
+* Concurrency & rate-limiting: worker pool (run_pool) with configurable threads (--threads),
+  request delay (--delay), and automatic backoff on HTTP 429/503
+* Automated test suite (t/): 89 unit tests across 6 test suites validating SemVer logic,
+  lifecycle states, CLI options, db integrity, worker pool, and probe verifiers
+* Documentation: bilingual README (English / Spanish) designed to DragonJAR skill standards
 * New: passive extension discovery from frontend DOM assets
 * New: extension sensitive-endpoint auditor (data-driven, non-destructive probes
   only for detected extensions - Akeeba, RSForm, docman, jckeditor, ...)

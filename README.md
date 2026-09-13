@@ -1,13 +1,14 @@
 # OWASP JoomScan
 
 [![License](https://img.shields.io/badge/license-GPLv3-red.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.0.8--refresh-green.svg)](https://github.com/DragonJAR/joomscan)
+[![Version](https://img.shields.io/badge/version-0.0.8--2026.refresh-green.svg)](https://github.com/DragonJAR/joomscan)
 [![Perl](https://img.shields.io/badge/perl-5.x-yellow.svg)](https://www.perl.org)
-[![Joomla Support](https://img.shields.io/badge/joomla-1.0%20to%206.x-blue.svg)](https://www.joomla.org)
-[![Author](https://img.shields.io/badge/maintainer-DragonJAR-orange.svg)](https://www.dragonjar.org)
+[![Joomla Support](https://img.shields.io/badge/joomla-1.0%20to%206.1.3-blue.svg)](https://www.joomla.org)
+[![Tests](https://img.shields.io/badge/tests-89%20passed-brightgreen.svg)](t/)
+[![Maintainer](https://img.shields.io/badge/maintainer-DragonJAR-orange.svg)](https://www.dragonjar.org)
 [![Español](https://img.shields.io/badge/read%20in-Espa%C3%B1ol-blue.svg)](README.es.md)
 
-> Modern, reliable Joomla vulnerability scanner and security auditor. Combines multi-tier version detection (Joomla 1.0 to 6.x), server baseline calibration to eliminate false positives, mathematical SemVer CVE matching, concurrent extension auditing, and responsive offline HTML reporting into a lightweight, DRY architecture.
+> Modern, reliable Joomla vulnerability scanner and security auditor. Combines multi-tier version detection (Joomla 1.0 to 6.1.3), server baseline calibration to eliminate false positives, mathematical SemVer CVE matching, concurrent extension auditing, and responsive offline HTML reporting into a lightweight, DRY architecture.
 
 ---
 
@@ -15,10 +16,11 @@
 
 OWASP JoomScan automates vulnerability detection, configuration auditing, and attack surface discovery in Joomla CMS deployments:
 
-- **Multi-Tier Version Detection (Joomla 1.0 to 6.x)**: 6 hierarchical detection layers (XML manifests, asset JSON, dynamic language packs, meta/feed generators, legacy assets, and core frontend signatures) with automated root-domain fallback for alias and reverse-proxy mount points.
+- **Multi-Tier Version Detection (Joomla 1.0 to 6.1.3)**: 6 hierarchical detection layers (XML manifests, asset JSON, dynamic language packs, meta/feed generators, legacy assets, and core frontend signatures) with automated root-domain fallback for alias and reverse-proxy mount points.
 - **False-Positive Elimination**: Server baseline calibration detects catch-all HTTP 200 responses (soft-404s). Sensitive files, backups, and administrator portals require strict syntactic signature validation (`class JConfig`, `[core]`, environment variables, login tokens) rather than trusting HTTP status codes alone.
-- **Mathematical SemVer CVE Matching**: Evaluates exact target versions against 220+ official Joomla core advisories, including the latest 2026 security bulletins (up to Joomla 6.1.3).
-- **Component & Extension Auditing**: Passive discovery via DOM assets and active high-speed dictionary enumeration powered by a fork-based worker pool.
+- **Mathematical SemVer CVE Matching**: Evaluates exact target versions against 220+ official Joomla core advisories, including the latest August 2026 security bulletins (e.g. `CVE-2026-73373`, `CVE-2026-73337`, `CVE-2026-71574` affecting up to Joomla 6.1.2, resolved in 6.1.3).
+- **Lifecycle & End-of-Life (EOL) Tracking**: Complete support lifecycle matrix from legacy Joomla 1.x through active Series 5 (5.4.8) and Series 6 (6.1.3, supported through 2028/2029).
+- **Component & Extension Auditing**: Passive discovery via DOM assets and active high-speed dictionary enumeration powered by a fork-based worker pool (`run_pool()`).
 - **Sensitive Files & VCS Metadata Detection**: Discovers `.env` files, Git/SVN metadata, database configuration leaks, log files, and uncleaned backup archives (e.g. Akeeba Kickstart).
 - **Firewall & Security Headers Baseline**: Detects leading Web Application Firewalls (Cloudflare, ModSecurity, Sucuri, Incapsula) and audits hardening headers (HSTS, CSP, X-Frame-Options, Permissions-Policy).
 - **Modern Offline Dashboard**: Generates a self-contained, responsive, single-file HTML report with dynamic security posture scores across 5 dimensions, alongside text and JSON outputs for CI/CD pipelines.
@@ -81,7 +83,7 @@ Run the automated test suite to ensure all probe engines, SemVer parsers, baseli
 prove -I. t/
 ```
 
-All 6 test files and 89 assertions should pass cleanly.
+All 6 test suites and 89 assertions should pass cleanly.
 
 ---
 
@@ -102,7 +104,7 @@ The engine follows a strict DRY, non-destructive verification pipeline:
 [3. Signature Validation] ──► Enforce syntax parsing (JConfig, [core], .env, form tokens)
      │
      ▼
-[4. SemVer CVE Matching]  ──► Evaluate version tuples vs advisories (Joomla 1.0 - 6.x)
+[4. SemVer CVE Matching]  ──► Evaluate version tuples vs advisories (Joomla 1.0 - 6.1.3)
      │
      ▼
 [5. Report Generation]    ──► Emit text, JSON, and self-contained offline HTML dashboard
@@ -199,7 +201,7 @@ perl -I. t/06_probe_helpers.t
 
 Test coverage includes:
 - **SemVer logic** (`t/01_semver.t`): Range parsing, version bounds, and edge cases.
-- **Lifecycle & EOL** (`t/02_eol.t`): Support states from Joomla 1.0 to Joomla 6.x.
+- **Lifecycle & EOL** (`t/02_eol.t`): Support states from Joomla 1.0 to Joomla 6.1.3.
 - **CLI parsing** (`t/03_cli.t`): Flag handling and parameter validation.
 - **Database integrity** (`t/04_db_integrity.t`): Format checks on vulnerability dictionaries.
 - **Worker pool concurrency** (`t/05_pool.t`): Parallel chunking, error handling, and IPC pipes.
