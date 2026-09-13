@@ -1,5 +1,3 @@
-#start sensitive files / VCS metadata finder
-# Data-driven: the probe list is declarative; the engine (lib.pl helpers) is shared.
 dprint("Finding sensitive files and source-control metadata");
 
 do "$mepath/core/lib.pl";
@@ -55,7 +53,6 @@ foreach my $sf (@sens_files){
     }elsif($sf =~ /akeeba/ and $body =~ /(backup|kickstart|akeeba)/i){
         $note = " - Akeeba backup artifact may be exposed";
     }elsif($sf =~ /\/$/){
-        # Generic directory probe: require actual directory listing or leak evidence to report
         next unless ($body =~ /<title>Index of/i or $body =~ /Last modified<\/a>/i or $body =~ /Parent Directory<\/a>/i);
         $note = " - directory listing is enabled";
     }
@@ -67,4 +64,3 @@ if($fnd){
 }else{
     fprint("Sensitive files are not found");
 }
-#end sensitive files finder

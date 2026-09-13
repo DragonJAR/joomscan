@@ -1,4 +1,3 @@
-#start End-of-Life (unsupported version) check
 dprint("Checking Joomla end-of-life status");
 
 do "$mepath/core/lib.pl";
@@ -21,4 +20,3 @@ if($jvnum eq ""){
         }
     }
 }
-#end EOL check

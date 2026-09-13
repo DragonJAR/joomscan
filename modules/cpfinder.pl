@@ -1,4 +1,3 @@
-#start admin finder
 dprint("admin finder");
 
 do "$mepath/core/lib.pl";
@@ -17,14 +16,11 @@ foreach $admin(@admins){
 
 if($amtf==1){
     tprint("Admin page : $target/$adming/");
-    # Protection plugins (jSecure etc.) only reveal the panel to clients
-    # holding a specific cookie - detect their footprint passively.
     my $res = $ua->get("$target/$adming/");
     my $hdr = $res->headers_as_string;
     if($hdr =~ /jsecure|adminexile|ksecure/i){
         tprint("Protection plugin footprint detected in response headers ($&) - the real admin panel may be hidden");
     }
-    # Frontend login: admins can log in via com_users if not blocked
     my ($lcode, $lbody) = probe_get("index.php?option=com_users&view=login");
     if($lcode == 200 and !is_soft404($lbody, $lcode) and $lbody =~ /com_users/i){
         tprint("Frontend login available (admins may authenticate from the frontend) : $target/index.php?option=com_users&view=login");
@@ -32,5 +28,3 @@ if($amtf==1){
 }else{
     fprint("Admin page not found");
 }
-
-#end admin finder

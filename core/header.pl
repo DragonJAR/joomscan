@@ -34,7 +34,6 @@ if(!defined $ARGV[0]){
 }
 $cookie=1;
 $proxy=1;
-#Start help Function
 sub help
 {
 	print color("cyan");
@@ -114,5 +113,3 @@ if(($target !~ /\S/)&&($urlfile !~ /\S/)){
 }
 if($target !~ /^https?:\/\//) { $target = "http://$target"; };
 $target =~ s/\/+$//;
-
-#End help Function

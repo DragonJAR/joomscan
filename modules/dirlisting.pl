@@ -1,6 +1,3 @@
-#start Directory List & 404 handling
-# DRY: soft-404 classification lives in core/lib.pl and is shared by all
-# modules that probe paths; here we only consume it.
 dprint("Checking directory listing and target response behaviour");
 
 do "$mepath/core/lib.pl";
@@ -28,4 +25,3 @@ if($idx){
 }else{
     fprint("Directory listing is not enabled");
 }
-#end Directory List & 404 handling

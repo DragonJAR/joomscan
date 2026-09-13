@@ -1,13 +1,9 @@
-#start Joomla API unauthenticated disclosure (CVE-2023-23752)
-# Detects improper access checks in the Joomla webservice endpoints, fixed in 4.2.8 / 4.3.1.
 dprint("Checking Joomla API unauthenticated disclosure (CVE-2023-23752)");
 
 do "$mepath/core/lib.pl";
 
 my $jvnum = joomla_version_num($ver);
 
-# CVE-2023-23752 only affects Joomla 4.0.0-4.2.7. Skip probing on known
-# versions outside that range to avoid false positives and wasted requests.
 if($jvnum ne "" and !version_in_range($jvnum, "4.0.0", "4.2.7")){
     fprint("Joomla API endpoints are not readable (CVE-2023-23752 not applicable to Joomla $jvnum)");
 }else{
@@ -42,8 +38,6 @@ if($jvnum ne "" and !version_in_range($jvnum, "4.0.0", "4.2.7")){
         my $body = $res->decoded_content;
         next unless defined $body;
 
-        # A real API response returns JSON with a "data" or "error" key; an HTML
-        # page (login redirect / 404 page) is not a disclosure.
         next if $body =~ /^\s*</;
 
         if($body =~ /"(data|links|meta)"/i){
@@ -72,4 +66,3 @@ if($jvnum ne "" and !version_in_range($jvnum, "4.0.0", "4.2.7")){
         }
     }
 }
-#end Joomla API disclosure

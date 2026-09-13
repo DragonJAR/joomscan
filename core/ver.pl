@@ -1,4 +1,3 @@
-#start Version finder
 dprint("Detecting Joomla Version");
 
 $ver = "";
@@ -103,5 +102,3 @@ if($ver !~ m/\./i){
 $ver =~ s/[^0-9a-zA-Z. ]//g;
 
 if($ver !~ m/\./i){fprint("ver 404\n")}else{tprint("$ver");}
- 
-#end Version finder

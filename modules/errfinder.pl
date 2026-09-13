@@ -1,4 +1,3 @@
-#start Checking common logs
 dprint("Finding common log files name");
 my $ertf=0;
 @error = ('error.log','error_log','php-scripts.log','php.errors','php5-fpm.log','php_errors.log','debug.log','security.txt','.well-known/security.txt');
@@ -12,4 +11,3 @@ foreach my $er (@error){
 if($ertf==0) {
     fprint("error log is not found");
 }
-#end Checking common logs

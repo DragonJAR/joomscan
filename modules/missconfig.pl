@@ -1,4 +1,3 @@
-#start missconfig check
 my $ctf=0;
 dprint("Checking apache info/status files");
 my @configs = ('server-status','server-info');
@@ -12,5 +11,3 @@ foreach $config(@configs){
 if($ctf==0){
 	fprint("Readable info/status files are not found");
 }
-
-#end missconfig check

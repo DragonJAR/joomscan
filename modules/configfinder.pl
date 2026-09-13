@@ -1,5 +1,3 @@
-#start config.php.x check + hardening flags extraction
-# Checks for exposed configuration backups and audits hardening flags.
 dprint("Checking sensitive config.php.x file");
 
 do "$mepath/core/lib.pl";
@@ -16,7 +14,6 @@ foreach $config(@configs){
         $cnftmp="$cnftmp\nReadable config file is found \n config file path : $target/$config\n";
         $ctf=1;
 
-        # Hardening flags (declarative, only when the leak contains them)
         my %flags = (
             'debug'            => qr/public\s+\$debug\s*=\s*'?([^'";]+)'?/i,
             'error_reporting'  => qr/public\s+\$error_reporting\s*=\s*'?([^'";]+)'?/i,
@@ -45,4 +42,3 @@ if($ctf==0){
 }else{
     tprint($cnftmp);
 }
-#end config.php.x check

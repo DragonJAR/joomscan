@@ -1,7 +1,3 @@
-#start extension sensitive endpoint auditor
-# Data-driven (DRY): probes come from exploit/db/extension_endpoints.txt and
-# only run for components already detected on the target (@found_components),
-# so we never waste requests on absent extensions. Non-destructive probes only.
 dprint("Auditing sensitive endpoints of detected extensions");
 
 do "$mepath/core/lib.pl";
@@ -39,4 +35,3 @@ if(!@found_components){
         fprint("No sensitive extension endpoints were reachable for detected extensions (" . join(", ", @found_components) . ")");
     }
 }
-#end extension auditor

@@ -1,5 +1,3 @@
-#start security headers check (hardening baseline)
-# Declarative: expected headers + recommended value patterns.
 dprint("Checking security headers");
 
 do "$mepath/core/lib.pl";
@@ -61,4 +59,3 @@ if($missing){
 if(!$missing and !$weak){
     tprint("All baseline security headers are present and compliant");
 }
-#end security headers check

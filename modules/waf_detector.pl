@@ -1,4 +1,3 @@
-#start WAF Detector
 $fwtf=0;
 my $wres = $ua->get("$target/");
 $source = defined $wres ? $wres->headers_as_string : "";
@@ -102,4 +101,3 @@ if ($source =~ /mod_security/g or $source =~ /Mod_Security/g or $source =~ /NOYB
 if ($fwtf==0){
 	fprint("Firewall not detected");
 }
-#end WAF Detector

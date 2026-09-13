@@ -6,14 +6,12 @@ our $target="$target/";
 $html=decode_base64($reportencode);
 
 
-#localtime
 @weekday = ("Sunday", "Monday", "Tuesday", "Wednesday", "thursday", "Friday", "Saturday");
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();;
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
 $year = $year + 1900;
 $mon += 1;
 $ftime="$mday/$mon/$year $hour:$min:$sec $weekday[$wday]";
 
-#replace info
 $html =~ s/\$target/$target/g;
 $html =~ s/\$codename/$codename/g;
 $html =~ s/\$version/$version/g;
@@ -21,7 +19,6 @@ $html =~ s/\$ftime/$ftime/g;
 $html =~ s/\$stime/$stime/g;
 $html =~ s/\$vbversion/$ver/g;
 
-#htmltmp
 $tmpbody='<tr>
   <td>
     <pre></pre>
@@ -32,7 +29,6 @@ $tmpbody='<tr>
   </td>
 </tr>';
 
-#txtlog
 my $tmptarget = $target;
 $tmptarget =~ s#^https?://##i;
 $tmptarget =~ s#[/\\:]#_#g;
@@ -47,8 +43,6 @@ our $log="$log";
 print $fh "$log";
 close $fh;
 
-
-#htmllog
 our @tflog_snap = @tflog;   # pristine copy for SARIF (HTML loop below strips prefixes)
 for($i=0;$i<=$#dlog;$i++){
   $tbody=$tmpbody;

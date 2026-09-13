@@ -1,4 +1,3 @@
-#start robots.txt module
 dprint("Checking robots.txt existing");
 $response=$ua->get("$target/robots.txt");
 my $headers  = $response->headers();
@@ -18,4 +17,3 @@ if ($response->status_line =~ /200/g and $content_type =~ /text\/plain/g) {
 }else{
 	fprint("robots.txt is not found");
 }
-#end robots.txt module
