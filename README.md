@@ -1,143 +1,227 @@
-![Version 0.0.8](https://img.shields.io/badge/Version-0.0.8-green.svg)
-![Perl](https://img.shields.io/badge/Perl-5.x-yellow.svg)
-[![GPLv3 License](https://img.shields.io/badge/License-GPLv3-red.svg)](https://github.com/rezasp/joomscan/blob/master/LICENSE.md)
-[![Twitter](https://img.shields.io/badge/Twitter-@OWASP_JoomScan-blue.svg)](http://twitter.com/OWASP_JoomScan)
-[![Leader](https://img.shields.io/badge/Twitter-@rezesp-blue.svg)](http://www.twitter.com/rezesp)
-[![Leader](https://img.shields.io/badge/Twitter-@Ali_Razmjo0-blue.svg)](http://www.twitter.com/Ali_Razmjo0)
-<br>
-[![Black Hat Arsenal USA](https://rawgit.com/toolswatch/badges/master/arsenal/usa/2018.svg)](http://www.toolswatch.org/2018/05/black-hat-arsenal-usa-2018-the-w0w-lineup/)
-[![Black Hat Arsenal ASIA](https://rawgit.com/toolswatch/badges/master/arsenal/asia/2018.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-asia-2018-great-lineup/)
+# OWASP JoomScan
 
+[![License](https://img.shields.io/badge/license-GPLv3-red.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.0.8--refresh-green.svg)](https://github.com/DragonJAR/joomscan)
+[![Perl](https://img.shields.io/badge/perl-5.x-yellow.svg)](https://www.perl.org)
+[![Joomla Support](https://img.shields.io/badge/joomla-1.0%20to%206.x-blue.svg)](https://www.joomla.org)
+[![Author](https://img.shields.io/badge/maintainer-DragonJAR-orange.svg)](https://www.dragonjar.org)
+[![Español](https://img.shields.io/badge/read%20in-Espa%C3%B1ol-blue.svg)](README.es.md)
 
-<img src="https://raw.githubusercontent.com/rezasp/Trash/master/joomscan.png" width="200"><img src="https://raw.githubusercontent.com/rezasp/Trash/master/owasp.png" width="500">
+> Modern, reliable Joomla vulnerability scanner and security auditor. Combines multi-tier version detection (Joomla 1.0 to 6.x), server baseline calibration to eliminate false positives, mathematical SemVer CVE matching, concurrent extension auditing, and responsive offline HTML reporting into a lightweight, DRY architecture.
 
-======
+---
 
-OWASP JoomScan Project
-======
+## 🎯 What OWASP JoomScan Does
 
-OWASP Joomla! Vulnerability Scanner (JoomScan) is an open source project, developed with the aim of automating the task of vulnerability detection and reliability assurance in Joomla CMS deployments. Implemented in Perl, this tool enables seamless and effortless scanning of Joomla installations, while leaving a minimal footprint with its lightweight and modular architecture. It not only detects known offensive vulnerabilities, but also is able to detect many misconfigurations and admin-level shortcomings that can be exploited by adversaries to compromise the system. Furthermore, OWASP JoomScan provides a user-friendly interface and compiles the final reports in both text and HTML formats for ease of use and minimization of reporting overheads.
-<br>
-OWASP JoomScan is included in Kali Linux distributions.
+OWASP JoomScan automates vulnerability detection, configuration auditing, and attack surface discovery in Joomla CMS deployments:
 
-* **Read More**: https://www.secologist.com/open-source-projects
+- **Multi-Tier Version Detection (Joomla 1.0 to 6.x)**: 6 hierarchical detection layers (XML manifests, asset JSON, dynamic language packs, meta/feed generators, legacy assets, and core frontend signatures) with automated root-domain fallback for alias and reverse-proxy mount points.
+- **False-Positive Elimination**: Server baseline calibration detects catch-all HTTP 200 responses (soft-404s). Sensitive files, backups, and administrator portals require strict syntactic signature validation (`class JConfig`, `[core]`, environment variables, login tokens) rather than trusting HTTP status codes alone.
+- **Mathematical SemVer CVE Matching**: Evaluates exact target versions against 220+ official Joomla core advisories, including the latest 2026 security bulletins (up to Joomla 6.1.3).
+- **Component & Extension Auditing**: Passive discovery via DOM assets and active high-speed dictionary enumeration powered by a fork-based worker pool.
+- **Sensitive Files & VCS Metadata Detection**: Discovers `.env` files, Git/SVN metadata, database configuration leaks, log files, and uncleaned backup archives (e.g. Akeeba Kickstart).
+- **Firewall & Security Headers Baseline**: Detects leading Web Application Firewalls (Cloudflare, ModSecurity, Sucuri, Incapsula) and audits hardening headers (HSTS, CSP, X-Frame-Options, Permissions-Policy).
+- **Modern Offline Dashboard**: Generates a self-contained, responsive, single-file HTML report with dynamic security posture scores across 5 dimensions, alongside text and JSON outputs for CI/CD pipelines.
+- **Evasion & Traffic Control**: Configurable delay, random User-Agents, proxy support, and automatic backoff when encountering HTTP 429/503 rate limits.
 
-### WHY OWASP JOOMSCAN  ?
-Automated ...<br>
-  *Version enumerator (incl. Joomla 4.x/5.x/6.x)<br>
-  *Vulnerability enumerator (based on version, 221 official advisories 2017-2026)<br>
-  *Joomla API unauthenticated disclosure detector (CVE-2023-23752)<br>
-  *End-of-Life / support status check (Joomla 1.x - 6.x)<br>
-  *Passive component discovery (frontend DOM assets)<br>
-  *Components enumerator (1209 most popular by default)<br>
-  *Components vulnerability enumerator (based on version)(+1030 exploit)<br>
-  *Extension sensitive-endpoint auditor (data-driven, non-destructive probes)<br>
-  *Firewall detector<br>
-  *Security headers checker with hardening baseline (HSTS, CSP, XFO, nosniff, ...)<br>
-  *Sensitive files & VCS metadata finder (.env, .git, Akeeba backups, installer)<br>
-  *configuration.php hardening flags check (debug, error_reporting, force_ssl, session_handler)<br>
-  *Reporting to Text, HTML & SARIF v2.1.0 output<br>
-  *Finding common log files<br>
-  *Finding common backup files<br>
+> **Important:** OWASP JoomScan is designed for authorized security assessments, penetration testing, and defensive auditing. Always ensure you have explicit authorization before scanning target infrastructure.
 
+---
 
-# INSTALL
+## 📦 Installation
 
-    git clone https://github.com/rezasp/joomscan.git
-    cd joomscan
-    perl joomscan.pl
+### Option 1: Native Installation
 
-For Docker installation and usage
+Clone the repository and verify Perl dependencies:
 
-    # Build the docker image
-    docker build -t rezasp/joomscan .
+```bash
+git clone https://github.com/DragonJAR/joomscan.git
+cd joomscan
+perl joomscan.pl --help
+```
 
-    # Run a new docker container with reports directory mounted at the host
-    docker run -it -v /path/to/reports:/home/joomscan/reports --name joomscan_cli rezasp/joomscan
+If your system lacks required Perl modules:
 
-    # For accessing the docker container you can run the following command
-    docker run -it -v /path/to/reports:/home/joomscan/reports --name joomscan_cli --entrypoint /bin/bash rezasp/joomscan
+```bash
+# Debian / Ubuntu / Kali
+sudo apt update && sudo apt install perl libwww-perl liblwp-protocol-https-perl
 
-# JOOMSCAN ARGUMENTS
+# CPAN (Alternative)
+cpan install LWP::UserAgent LWP::Protocol::https
+```
 
-    Usage:	joomscan.pl [options]
+### Option 2: Docker Installation
 
-    --url | -u <URL>                |   The Joomla URL/domain to scan.
-    --mass | -m <filename>          |   Cycle through URLs provided in a txt file.
-    --enumerate-components | -ec    |   Try to enumerate components.
-    --joomla-version | -jv          |   Output target Joomla version and exit without further checks.
-    --no-report | -nr               |   Do not produce a report.
+Run JoomScan in an isolated container without installing host dependencies:
 
-    --cookie <String>               |   Set cookie.
-    --user-agent | -a <user-agent>  |   Use the specified User-Agent.
-    --random-agent | -r             |   Use a random User-Agent.
-    --timeout <time-out>            |   Set timeout.
-    --proxy=PROXY                   |   Use a proxy to connect to the target URL.
-    --about                         |   About Author
-    --update                        |   Update to the latest version.
-    --help | -h                     |   This help screen.
-    --version                       |   Output the current version and exit.
+```bash
+# Build the Docker image
+docker build -t dragonjar/joomscan .
 
+# Run scan with local reports directory mounted
+docker run -it --rm -v $(pwd)/reports:/home/joomscan/reports dragonjar/joomscan -u https://example.com
+```
 
-# OWASP JOOMSCAN USAGE EXAMPLES
+---
 
-Do default checks...<br>
-```perl joomscan.pl --url www.example.com```<br>
-or<br>
-```perl joomscan.pl -u www.example.com```
-<br>
-<br>
-Enumerate installed components...<br>
-```perl joomscan.pl --url www.example.com --enumerate-components```<br>
-or<br>
-```perl joomscan.pl -u www.example.com --ec```<br>
-<br>
+## ⚙️ Prerequisites
 
-Set cookie<br>
-```perl joomscan.pl --url www.example.com --cookie "test=demo;"```
-<br><br>
+| Dependency | Minimum Version | Purpose |
+|------------|-----------------|---------|
+| **Perl** | 5.20+ | Core runtime environment |
+| **LWP::UserAgent** | 6.00+ | HTTP/HTTPS engine with connection reuse |
+| **LWP::Protocol::https** | Any | TLS/SSL support for encrypted targets |
+| **Docker** | 20.10+ | Optional containerized deployment |
 
-Set user-agent<br>
-```perl joomscan.pl --url www.example.com --user-agent "Googlebot/2.1 (+http://www.googlebot.com/bot.html)"```<br>
-or<br>
-```perl joomscan.pl -u www.example.com -a "Googlebot/2.1 (+http://www.googlebot.com/bot.html)"```<br>
-<br><br>
+### Verification
 
-Set random user-agent<br>
-```perl joomscan.pl -u www.example.com --random-agent```<br>
-or<br>
-```perl joomscan.pl --url www.example.com -r```<br>
-<br>
+Run the automated test suite to ensure all probe engines, SemVer parsers, baseline algorithms, and databases are operational:
 
-Set proxy<br>
-```perl joomscan.pl --url www.example.com --proxy http://127.0.0.1:8080```<br>
-or<br>
-```perl joomscan.pl -u www.example.com --proxy https://127.0.0.1:443```<br>
-<br><br>
+```bash
+prove -I. t/
+```
 
-Update Joomscan...<br>
-```perl joomscan.pl --update```<br><br>
+All 6 test files and 89 assertions should pass cleanly.
 
+---
 
-# OWASP PAGE
+## 🛡️ Architecture & Verification Workflow
 
-[https://www.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project](https://www.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project)
+The engine follows a strict DRY, non-destructive verification pipeline:
 
-# GIT REPOSITORY
+```
+[Target URL]
+     │
+     ▼
+[1. Baseline Calibration] ──► Probe random token; fingerprint catch-all title & length
+     │
+     ▼
+[2. Multi-Tier Detection]  ──► Query Tiers 1-6 with root domain fallback (Early Exit)
+     │
+     ▼
+[3. Signature Validation] ──► Enforce syntax parsing (JConfig, [core], .env, form tokens)
+     │
+     ▼
+[4. SemVer CVE Matching]  ──► Evaluate version tuples vs advisories (Joomla 1.0 - 6.x)
+     │
+     ▼
+[5. Report Generation]    ──► Emit text, JSON, and self-contained offline HTML dashboard
+```
 
-[https://github.com/rezasp/joomscan](https://github.com/rezasp/joomscan)
+1. **Baseline Calibration**: Probes a randomized non-existent path. If the server responds with HTTP 200 (portal catch-all), JoomScan establishes baseline title and byte variance to filter out soft-404 false positives.
+2. **Multi-Tier Detection**: Resolves the Joomla version starting from definitive manifests (`administrator/manifests/files/joomla.xml`, `media/system/joomla.asset.json`) and gracefully falls back to language packs or frontend assets.
+3. **Signature Validation**: Rejects generic HTML pages for sensitive paths; genuine findings must exhibit structurally authentic headers or tokens.
+4. **SemVer Evaluation**: Matches identified versions against mathematical intervals (`<`, `<=`, `a-b`), preventing regex false matches.
+5. **Report Generation**: Computes dimension metrics and produces a single-file offline HTML dashboard containing 24-hour remediation steps.
 
-# ISSUES
+---
 
-[https://github.com/rezasp/joomscan/issues](https://github.com/rezasp/joomscan/issues)
+## 🚀 Usage Examples
 
-# PROJECT LEADERS
+### Example 1: Standard Audit (Root or Subpath)
 
-*  Mohammad Reza Espargham           [ reza[dot]espargham[at]owasp[dot]org ]
-*  Ali Razmjoo                                    [ ali[dot]razmjoo[at]owasp[dot]org ]
+Scans a target, detects version with root-domain fallback, and generates a modern HTML report:
 
+```bash
+perl joomscan.pl -u https://uftm.edu.br/proplan
+```
 
-<br><br>
-OWASP JoomScan introduction (Youtube)
+### Example 2: Full Audit with Extension Enumeration & Concurrency
 
-[![OWASP JoomScan introduction](https://img.youtube.com/vi/Ik2CJ9LkuoI/0.jpg)](https://www.youtube.com/watch?v=Ik2CJ9LkuoI)
+Enumerate installed components using 10 concurrent worker threads:
+
+```bash
+perl joomscan.pl -u https://example.com --enumerate-components --threads 10
+```
+
+### Example 3: Evasion & Low-Noise Assessment
+
+Scan through an interception proxy (e.g. Burp Suite) with random User-Agents and request throttling:
+
+```bash
+perl joomscan.pl -u https://example.com -r --delay 0.5 --proxy http://127.0.0.1:8080
+```
+
+### Example 4: CI/CD Pipeline & Headless JSON Output
+
+Run silently without console banners and emit structured JSON output to STDOUT:
+
+```bash
+perl joomscan.pl -u https://example.com --silent --json > result.json
+```
+
+### Example 5: Mass Target Auditing
+
+Scan multiple Joomla targets listed line-by-line in a text file:
+
+```bash
+perl joomscan.pl -m targets.txt --threads 5
+```
+
+---
+
+## 📊 Command Line Options
+
+| Option | Short | Argument | Description |
+|--------|-------|----------|-------------|
+| `--url` | `-u` | `<URL>` | Target Joomla URL or domain to audit. |
+| `--mass` | `-m` | `<file>` | Batch audit targets listed in a text file. |
+| `--enumerate-components` | `-ec` | None | Enumerate installed components via dictionary attack. |
+| `--joomla-version` | `-jv` | None | Detect Joomla version and exit immediately. |
+| `--threads` | `-t` | `<int>` | Number of concurrent worker threads (default: `5`). |
+| `--delay` | None | `<sec>` | Delay between HTTP requests in seconds (e.g. `0.5`). |
+| `--cookie` | None | `<str>` | Set HTTP request Cookie header. |
+| `--user-agent` | `-a` | `<str>` | Specify custom User-Agent string. |
+| `--random-agent` | `-r` | None | Randomize User-Agent for every request. |
+| `--proxy` | None | `<URL>` | Route traffic through HTTP, HTTPS, or SOCKS proxy. |
+| `--timeout` | None | `<sec>` | HTTP connection timeout in seconds (default: `60`). |
+| `--json` | None | None | Output structured JSON scan results to STDOUT. |
+| `--silent` | None | None | Suppress banners and non-critical terminal output. |
+| `--no-report` | `-nr` | None | Disable generation of report files on disk. |
+| `--version` | None | None | Display JoomScan version and exit. |
+| `--help` | `-h` | None | Display command-line help screen. |
+
+---
+
+## 🧪 Automated Testing
+
+JoomScan maintains an automated test suite verifying core stability and detection accuracy:
+
+```bash
+# Run all tests
+prove -I. t/
+
+# Run individual test files with verbose output
+perl -I. t/01_semver.t
+perl -I. t/02_eol.t
+perl -I. t/06_probe_helpers.t
+```
+
+Test coverage includes:
+- **SemVer logic** (`t/01_semver.t`): Range parsing, version bounds, and edge cases.
+- **Lifecycle & EOL** (`t/02_eol.t`): Support states from Joomla 1.0 to Joomla 6.x.
+- **CLI parsing** (`t/03_cli.t`): Flag handling and parameter validation.
+- **Database integrity** (`t/04_db_integrity.t`): Format checks on vulnerability dictionaries.
+- **Worker pool concurrency** (`t/05_pool.t`): Parallel chunking, error handling, and IPC pipes.
+- **Probe helpers & verifiers** (`t/06_probe_helpers.t`): Soft-404 baseline contrast, sensitive file signatures, root fallbacks, and Joomla 6.1.3 detection.
+
+---
+
+## 👥 Authors & Community
+
+- **Original Authors & Project Leaders**:
+  - Mohammad Reza Espargham ([@rezesp](https://twitter.com/rezesp))
+  - Ali Razmjoo ([@Ali_Razmjo0](https://twitter.com/Ali_Razmjo0))
+- **Maintainer**:
+  - [DragonJAR SAS](https://www.dragonjar.org)
+- **Official Resources**:
+  - [OWASP Project Page](https://www.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project)
+  - [GitHub Repository](https://github.com/DragonJAR/joomscan)
+  - [Issue Tracker](https://github.com/DragonJAR/joomscan/issues)
+  - [YouTube Introduction](https://www.youtube.com/watch?v=Ik2CJ9LkuoI)
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
