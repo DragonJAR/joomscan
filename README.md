@@ -125,7 +125,7 @@ The engine follows a strict DRY, non-destructive verification pipeline:
 Scans a target, detects version with root-domain fallback, and generates a modern HTML report:
 
 ```bash
-perl joomscan.pl -u https://uftm.edu.br/proplan
+perl joomscan.pl -u https://example.com/cms
 ```
 
 ### Example 2: Full Audit with Extension Enumeration & Concurrency

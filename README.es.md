@@ -125,7 +125,7 @@ El motor implementa una canalización de verificación no destructiva bajo el pr
 Escanea un objetivo, detecta la versión con fallback al dominio raíz y genera el informe HTML moderno:
 
 ```bash
-perl joomscan.pl -u https://uftm.edu.br/proplan
+perl joomscan.pl -u https://example.com/cms
 ```
 
 ### Ejemplo 2: Auditoría completa con enumeración concurrente de extensiones

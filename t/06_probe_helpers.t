@@ -25,10 +25,10 @@ is(looks_like_config_leak(undef), "", "Undefined body returns empty");
 # Baseline contrast tests
 our $baseline_calibrated = 1;
 our $baseline_is_catchall = 1;
-our $baseline_title = "PROPLAN - Pró-Reitoria de Planejamento";
+our $baseline_title = "Portal Organization - Main Dashboard";
 our $baseline_len = 50000;
 
-my $catchall_page = "<html><head><title>PROPLAN - Pró-Reitoria de Planejamento</title></head><body><h1>PROPLAN Home</h1></body></html>";
+my $catchall_page = "<html><head><title>Portal Organization - Main Dashboard</title></head><body><h1>Portal Home</h1></body></html>";
 is(is_soft404($catchall_page, 200), 1, "Catch-all baseline title match detected as soft-404");
 
 # Reset baseline for unit signature tests
@@ -73,17 +73,17 @@ is(is_admin_login('<form id="form-login"><input name="username" id="mod-login-us
 is(is_admin_login('<title>Joomla! Administration Login</title><input type="password">'), 1, "Joomla admin login title and password recognized");
 
 # Root URL resolution
-is(get_root_url("https://uftm.edu.br/proplan"), "https://uftm.edu.br", "Root URL extracted from subpath");
+is(get_root_url("https://example.com/subportal"), "https://example.com", "Root URL extracted from subpath");
 is(get_root_url("http://example.com:8080/joomla/sub"), "http://example.com:8080", "Root URL extracted with port");
 is(get_root_url("https://standalone.org"), "https://standalone.org", "Root URL preserved for bare domain");
 
 # Version Detection unit test
 my $fake_xml = '<?xml version="1.0" encoding="UTF-8"?><extension version="3.4" type="file"><name>files_joomla</name><version>3.4.8</version></extension>';
 our %resp_cache;
-$resp_cache{"https://uftm.edu.br/proplan/"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/html"], "<html><head><title>Proplan</title></head><body>Home</body></html>");
-$resp_cache{"https://uftm.edu.br/proplan/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(404, "Not Found", [], "404 Not Found");
-$resp_cache{"https://uftm.edu.br/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/xml"], $fake_xml);
-is(detect_joomla_version("https://uftm.edu.br/proplan"), "Joomla 3.4.8", "Detects core version via root manifest fallback");
+$resp_cache{"https://subpath.example.com/portal/"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/html"], "<html><head><title>Portal</title></head><body>Home</body></html>");
+$resp_cache{"https://subpath.example.com/portal/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(404, "Not Found", [], "404 Not Found");
+$resp_cache{"https://subpath.example.com/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/xml"], $fake_xml);
+is(detect_joomla_version("https://subpath.example.com/portal"), "Joomla 3.4.8", "Detects core version via root manifest fallback");
 
 # Joomla 6 detection via joomla.asset.json
 my $j6_asset_json = '{"name":"joomla","version":"6.1.3","description":"Joomla! CMS"}';
