@@ -1,6 +1,7 @@
 #start Version finder
 dprint("Detecting Joomla Version");
 
+$ver = "";
 $ua->timeout(60);
 
 my $response = $ua->get("$target");
@@ -18,6 +19,25 @@ if($source =~ /X-Meta-Generator\:(.*?)\n/){
 $ppp=$1;
     if($ppp =~ /[0-9]+(\.[0-9]+)+/g){
         $ver="Joomla $&";
+    }
+}
+
+# Modern Joomla (3.x / 4.x / 5.x / 6.x) fingerprinting:
+#  1) <meta name="generator" content="Joomla! X.Y.Z ..."> in HTML (3.x and earlier)
+#  2) RSS/Atom feeds publish the full <generator>Joomla! X.Y.Z</generator> tag
+if($ver !~ m/\./i){
+    if($source =~ /<meta[^>]*name=[\"']generator[\"'][^>]*content=[\"']Joomla!\s*([0-9]+(\.[0-9]+)+)/i){
+        $ver="Joomla $1";
+    }
+}
+if($ver !~ m/\./i){
+    foreach my $feed ('index.php?format=feed&type=rss','index.php?option=com_content&view=featured&format=feed','index.php?option=com_content&view=category&layout=blog&format=feed'){
+        my $fbody=$ua->get("$target/$feed")->decoded_content;
+        $fbody = "" unless defined $fbody;
+        if($fbody =~ /<generator>Joomla!\s*([0-9]+(\.[0-9]+)+)<\/generator>/i){
+            $ver="Joomla $1";
+            last;
+        }
     }
 }
 if($ver !~ m/\./i){
@@ -52,7 +72,24 @@ if($ver !~ m/\./i){
             }elsif($source =~ /(Copyright \(C\) 2005 - 200(6|7))/ or $source =~ /47 2005\-09\-15 02\:55\:27Z rhuk/ or $source =~ /423 2005\-10\-09 18\:23\:50Z stingrey/ or $source =~ /1005 2005\-11\-13 17\:33\:59Z stingrey/ or $source =~ /1570 2005\-12\-29 05\:53\:33Z eddieajau/ or $source =~ /2368 2006\-02\-14 17\:40\:02Z stingrey/ or $source =~ /1570 2005\-12\-29 05\:53\:33Z eddieajau/ or $source =~ /4085 2006\-06\-21 16\:03\:54Z stingrey/ or $source =~ /4756 2006\-08\-25 16\:07\:11Z stingrey/ or $source =~ /5973 2006\-12\-11 01\:26\:33Z robs/ or $source =~ /5975 2006\-12\-11 01\:26\:33Z robs/){
             $ver="Joomla 1.0";
                     last;
-            }        
+            }
+    }
+}
+
+# Joomla 4.x / 5.x / 6.x fingerprinting (modern sys.php config includes <meta-data><version>)
+if($ver !~ m/\./i){
+    @vers = ('administrator/manifests/files/joomla.xml','language/en-GB/en-GB.xml','language/en-GB/langmetadata.xml','media/system/joomla.asset.json');
+    foreach $verc(@vers){
+            my $res=$ua->get("$target/$verc");
+            next unless $res->is_success;
+            my $body=$res->decoded_content;
+            if($body =~ /<version>\s*([0-9]+(\.[0-9]+)+)\s*<\/version>/i or $body =~ /<version\s+[^>]*>([0-9]+(\.[0-9]+)+)<\/version>/i){
+                $ver="Joomla $1";
+                last;
+            }elsif($verc =~ /joomla\.asset\.json/ and $body =~ /"version"\s*:\s*"([0-9]+(\.[0-9]+)+)/i){
+                $ver="Joomla $1";
+                last;
+            }
     }
 }
 
@@ -63,8 +100,7 @@ if($ver !~ m/\./i){
     }
 }
 
-$ver =~ tr/[0-9][a-z][A-Z][\.]\ //cd;
-#if( $ver =~ /\d\.\d\.\d+/ and length($ver) > 25) {$ver= "Joomla $&";}  
+$ver =~ s/[^0-9a-zA-Z. ]//g;
 
 if($ver !~ m/\./i){fprint("ver 404\n")}else{tprint("$ver");}
  

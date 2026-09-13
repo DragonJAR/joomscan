@@ -8,6 +8,8 @@ my $can_regexp=1;
 eval "use Regexp::Common \"URI\"";
 if($@) { $can_regexp=0; }
 
+do "$mepath/core/lib.pl";
+
 $ua = LWP::UserAgent->new();
 $ua->protocols_allowed( [ 'http' ] );
 if($target =~ /^https:\/\//) {
@@ -32,7 +34,7 @@ $timeout = $timeout || 60;
 $ua->timeout($timeout);
 
 @weekday = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();;
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
 $year = $year + 1900;
 $mon += 1;
 $stime="$year-$mon-$mday $hour:$min:$sec $weekday[$wday]";
@@ -69,8 +71,12 @@ if($proxy!=1){
 $ua->cookie_jar({}) if($cookie!=1);
 $ua->default_header('Cookie'=> "$cookie") if($cookie!=1);
 
+# Keep-alive: reuse TCP connections across requests (major speedup for scans
+# that make hundreds of sequential requests to the same host).
+eval { $ua->conn_cache(LWP::ConnCache->new) };
 
-our @dlog;our @tflog;
+our @dlog = (); our @tflog = ();
+%resp_cache = ();   # clear per-scan HTTP response cache (mass mode)
 
 our $log="";
 sub dprint{

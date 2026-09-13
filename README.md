@@ -1,4 +1,4 @@
-![Version 0.0.7](https://img.shields.io/badge/Version-0.0.7-green.svg)
+![Version 0.0.8](https://img.shields.io/badge/Version-0.0.8-green.svg)
 ![Perl](https://img.shields.io/badge/Perl-5.x-yellow.svg)
 [![GPLv3 License](https://img.shields.io/badge/License-GPLv3-red.svg)](https://github.com/rezasp/joomscan/blob/master/LICENSE.md)
 [![Twitter](https://img.shields.io/badge/Twitter-@OWASP_JoomScan-blue.svg)](http://twitter.com/OWASP_JoomScan)
@@ -24,12 +24,19 @@ OWASP JoomScan is included in Kali Linux distributions.
 
 ### WHY OWASP JOOMSCAN  ?
 Automated ...<br>
-  *Version enumerator<br>
-  *Vulnerability enumerator (based on version)<br>
+  *Version enumerator (incl. Joomla 4.x/5.x/6.x)<br>
+  *Vulnerability enumerator (based on version, 221 official advisories 2017-2026)<br>
+  *Joomla API unauthenticated disclosure detector (CVE-2023-23752)<br>
+  *End-of-Life / support status check (Joomla 1.x - 6.x)<br>
+  *Passive component discovery (frontend DOM assets)<br>
   *Components enumerator (1209 most popular by default)<br>
   *Components vulnerability enumerator (based on version)(+1030 exploit)<br>
+  *Extension sensitive-endpoint auditor (data-driven, non-destructive probes)<br>
   *Firewall detector<br>
-  *Reporting to Text & HTML output<br>
+  *Security headers checker with hardening baseline (HSTS, CSP, XFO, nosniff, ...)<br>
+  *Sensitive files & VCS metadata finder (.env, .git, Akeeba backups, installer)<br>
+  *configuration.php hardening flags check (debug, error_reporting, force_ssl, session_handler)<br>
+  *Reporting to Text, HTML & SARIF v2.1.0 output<br>
   *Finding common log files<br>
   *Finding common backup files<br>
 
@@ -56,12 +63,16 @@ For Docker installation and usage
     Usage:	joomscan.pl [options]
 
     --url | -u <URL>                |   The Joomla URL/domain to scan.
+    --mass | -m <filename>          |   Cycle through URLs provided in a txt file.
     --enumerate-components | -ec    |   Try to enumerate components.
+    --joomla-version | -jv          |   Output target Joomla version and exit without further checks.
+    --no-report | -nr               |   Do not produce a report.
 
     --cookie <String>               |   Set cookie.
     --user-agent | -a <user-agent>  |   Use the specified User-Agent.
     --random-agent | -r             |   Use a random User-Agent.
-    --timeout <time-out>            |   set timeout.
+    --timeout <time-out>            |   Set timeout.
+    --proxy=PROXY                   |   Use a proxy to connect to the target URL.
     --about                         |   About Author
     --update                        |   Update to the latest version.
     --help | -h                     |   This help screen.

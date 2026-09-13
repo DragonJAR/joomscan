@@ -22,9 +22,9 @@
 
 
 $author="Mohammad Reza Espargham , Ali Razmjoo";$author.="";
-$version="0.0.7";$version.="";
-$codename="Self Challenge";$codename.="";
-$update="2018/09/23";$update.="";
+$version="0.0.8";$version.="";
+$codename="2026 Refresh";$codename.="";
+$update="2026/09/13";$update.="";
 $mmm=0;
 
 system(($^O eq 'MSWin32') ? 'cls' : 'clear');
@@ -43,6 +43,10 @@ sub interrupt {
     print color("reset");
     exit 0;
 }
+
+# Initialise CLI-flag defaults so numeric comparisons don't warn under perl -w
+# when a flag is not passed (Getopt::Long only sets the var when the flag appears).
+$randomagent=0; $jversion=0; $components=0; $noreport=0;
 
 do "$mepath/core/header.pl";
 
@@ -65,12 +69,16 @@ sub run_checks {
    
    if($jversion!=1) {
       do "$mepath/modules/waf_detector.pl";
+      do "$mepath/modules/security_headers.pl";
       do "$mepath/exploit/jckeditor.pl";
    }
    
    do "$mepath/core/ver.pl";
    if($jversion!=1) {
       
+      do "$mepath/modules/extension_discovery.pl";
+      do "$mepath/modules/api_disclosure.pl";
+      do "$mepath/modules/eol.pl";
       do "$mepath/exploit/verexploit.pl"; 
       do "$mepath/exploit/com_lfd.pl";
       do "$mepath/modules/pathdisclure.pl";
@@ -80,10 +88,12 @@ sub run_checks {
       do "$mepath/modules/cpfinder.pl"; 
       do "$mepath/modules/robots.pl"; 
       do "$mepath/modules/backupfinder.pl"; 
+      do "$mepath/modules/sensitive_files.pl";
       do "$mepath/modules/errfinder.pl"; 
       do "$mepath/modules/reg.pl"; 
       do "$mepath/modules/configfinder.pl"; 
-      do "$mepath/exploit/components.pl" if($components==1);
+      do "$mepath/exploit/components.pl" if($components==1 || @found_components);
+      do "$mepath/modules/extension_auditor.pl" if($components==1 || @found_components);
 
    }
 

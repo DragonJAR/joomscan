@@ -113,5 +113,6 @@ if(($target !~ /\S/)&&($urlfile !~ /\S/)){
   exit (1);
 }
 if($target !~ /^https?:\/\//) { $target = "http://$target"; };
+$target =~ s/\/+$//;
 
 #End help Function

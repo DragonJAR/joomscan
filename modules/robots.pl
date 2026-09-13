@@ -8,9 +8,10 @@ if ($response->status_line =~ /200/g and $content_type =~ /text\/plain/g) {
 	my @lines = split /\n/, $source;
 	$probot="";
 	foreach my $line( @lines ) { 
-		if($line =~ /llow:/g){
-			$between=substr($line, index($line, ': ')+2, 99999);
-			$probot.="$target$between\n";
+		if($line =~ /^\s*(?:dis)?allow\s*:\s*(\S+)/i){
+			my $between = $1;
+			my $slash = ($between =~ /^\//) ? "" : "/";
+			$probot .= "$target$slash$between\n";
 		}
 	}
 	tprint("robots.txt is found\npath : $target/robots.txt \n\nInteresting path found from robots.txt\n$probot");

@@ -33,18 +33,23 @@ $tmpbody='<tr>
 </tr>';
 
 #txtlog
-if($target =~ /http:\/\/(.*?)\//){our $li=$1;}
-if($target =~ /https:\/\/(.*?)\//){our $li=$1;}
-$tmptarget="$1";
+my $tmptarget = $target;
+$tmptarget =~ s#^https?://##i;
+$tmptarget =~ s#[/\\:]#_#g;
+$tmptarget =~ s/^_+|_+$//g;
+$tmptarget = "target" if $tmptarget eq "";
+our $li = $tmptarget;
+mkdir "reports" unless -d "reports";
 mkdir "reports/$tmptarget";
 
-open(my $fh, '>', "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.txt");
+open(my $fh, '>:encoding(UTF-8)', "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.txt");
 our $log="$log";
 print $fh "$log";
 close $fh;
 
 
 #htmllog
+our @tflog_snap = @tflog;   # pristine copy for SARIF (HTML loop below strips prefixes)
 for($i=0;$i<=$#dlog;$i++){
   $tbody=$tmpbody;
   $tbody =~ s/\$i/$i/g;
@@ -71,13 +76,56 @@ for($i=0;$i<=$#dlog;$i++){
 
 $html =~ s/\$body/$body/g;
 
-
-
-
-
-open(my $fh, '>', "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.html");
+open(my $fh, '>:encoding(UTF-8)', "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.html");
 print $fh "$html";
 close $fh;
+
+#SARIF v2.1.0 output (DevSecOps pipelines)
+{
+    my @sarif_results = ();
+    for (my $i = 0 ; $i <= $#tflog_snap ; $i++) {
+        my $entry = $tflog_snap[$i];
+        next unless defined $entry && $entry ne "";
+        # Skip negative / not-found checks (1337false) from SARIF vulnerability results
+        next if ($entry =~ /^1337false/);
+        $entry =~ s/\[\+\+\]\s*//g;
+        next if $entry =~ /^\s*$/;
+
+        my $level = "warning";
+        if($entry =~ /CVE-|RCE|SQL Injection|SQLi|Local File|Remote Code|Password|privilege escalation|unauth/i){
+            $level = "error";
+        }elsif($entry =~ /Security header present and compliant|currently supported|robots\.txt is found/i){
+            $level = "note";
+        }
+
+        # Use CVE-ID as ruleId when available; otherwise fall back to a
+        # truncated description (stable enough for non-CVE findings).
+        my $rule;
+        if($entry =~ /(CVE-\d{4}-\d+)/i){
+            $rule = $1;
+        }else{
+            $rule = $entry;
+            $rule =~ s/\s+/ /g;
+            $rule = substr($rule, 0, 80);
+        }
+        my $m = $entry;
+        $m =~ s/\\/\\\\/g; $m =~ s/"/\\"/g; $m =~ s/\r//g; $m =~ s/\n/\\n/g;
+        my $r = $rule;
+        $r =~ s/\\/\\\\/g; $r =~ s/"/\\"/g;
+        my $u = $target;
+        $u =~ s/\\/\\\\/g; $u =~ s/"/\\"/g;
+        push @sarif_results, qq|{"ruleId":"$r","level":"$level","message":{"text":"$m"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"$u"}}}]}|;
+    }
+    if (@sarif_results) {
+        my $sarif = '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"OWASP JoomScan","version":"' . $version . '","informationUri":"https://github.com/rezasp/joomscan"}},"results":['
+            . join(",", @sarif_results)
+            . ']}]}';
+        my $sfile = "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.sarif.json";
+        open(my $sfh, '>:encoding(UTF-8)', $sfile);
+        print $sfh "$sarif\n";
+        close $sfh;
+    }
+}
 
 
 print color("yellow");

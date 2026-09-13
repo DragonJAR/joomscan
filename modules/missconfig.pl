@@ -1,7 +1,7 @@
 #start missconfig check
-$ctf=0;
+my $ctf=0;
 dprint("Checking apache info/status files");
-@configs = ('server-status','server-info');
+my @configs = ('server-status','server-info');
 foreach $config(@configs){
 	$source=$ua->get("$target/$config")->decoded_content;
 	if($source =~ m/Apache Server Information/i || $source =~ m/Server Root/i || $source =~ m/Apache Status/i){
