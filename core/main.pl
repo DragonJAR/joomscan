@@ -86,8 +86,10 @@ sub dprint{
     $dlog[$#dlog]=$in;
     $in="\n[+] $in\n";
     $log .= $in;
-    print color("blue");
-    print "$in";
+    unless($silent){
+        print color("blue");
+        print "$in";
+    }
 }
 sub tprint{
     my ($in) = @_;
@@ -98,9 +100,11 @@ sub tprint{
     $tflog[$#tflog]=$in;
     $in="[++] $in\n";
     $log .= $in;
-    print color("yellow");
-    print "$in";
-    print color("blue");
+    unless($silent){
+        print color("yellow");
+        print "$in";
+        print color("blue");
+    }
 }
 sub fprint{
     my ($in) = @_;
@@ -111,10 +115,14 @@ sub fprint{
     $tflog[$#tflog]="1337false$in";
     $in="[++] $in\n";
     $log .= $in;
-    print color("red");
-    print "$in";
-    print color("blue");
+    unless($silent){
+        print color("red");
+        print "$in";
+        print color("blue");
+    }
 }
 
-print color("blue");
-print "Processing $target ...\n\n\n";
+unless($silent){
+    print color("blue");
+    print "Processing $target ...\n\n\n";
+}

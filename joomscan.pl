@@ -44,7 +44,7 @@ sub interrupt {
     exit 0;
 }
 
-$randomagent=0; $jversion=0; $components=0; $noreport=0;
+$randomagent=0; $jversion=0; $components=0; $noreport=0; $threads=5; $delay=0; $json_output=0; $silent=0;
 
 do "$mepath/core/header.pl";
 

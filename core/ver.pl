@@ -5,9 +5,11 @@ $ua->timeout(60);
 
 my $response = $ua->get("$target");
 if (!$response->is_success) {
-    print color("red");
-    print "[++] The target is not alive!\n\n";
-    print color("reset");
+    unless($silent){
+        print color("red");
+        print "[++] The target is not alive!\n\n";
+        print color("reset");
+    }
     if (!$urlfile) {exit 0;} else {next;}
 }
 

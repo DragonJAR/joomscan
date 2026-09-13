@@ -106,17 +106,21 @@ close $fh;
         $u =~ s/\\/\\\\/g; $u =~ s/"/\\"/g;
         push @sarif_results, qq|{"ruleId":"$r","level":"$level","message":{"text":"$m"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"$u"}}}]}|;
     }
+    my $sarif = '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"OWASP JoomScan","version":"' . $version . '","informationUri":"https://github.com/rezasp/joomscan"}},"results":['
+        . join(",", @sarif_results)
+        . ']}]}';
     if (@sarif_results) {
-        my $sarif = '{"$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"OWASP JoomScan","version":"' . $version . '","informationUri":"https://github.com/rezasp/joomscan"}},"results":['
-            . join(",", @sarif_results)
-            . ']}]}';
         my $sfile = "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.sarif.json";
         open(my $sfh, '>:encoding(UTF-8)', $sfile);
         print $sfh "$sarif\n";
         close $sfh;
     }
+    if ($json_output) {
+        print "$sarif\n";
+    }
 }
 
-
-print color("yellow");
-print "\n\nYour Report : reports/$tmptarget/\n";
+unless($silent){
+    print color("yellow");
+    print "\n\nYour Report : reports/$tmptarget/\n";
+}

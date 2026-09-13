@@ -2,33 +2,34 @@
 
 use Term::ANSIColor;
  
-print color("YELLOW");
-print q{
+unless($silent){
+    print color("YELLOW");
+    print q{
     ____  _____  _____  __  __  ___   ___    __    _  _ 
    (_  _)(  _  )(  _  )(  \/  )/ __) / __)  /__\  ( \( )
   .-_)(   )(_)(  )(_)(  )    ( \__ \( (__  /(__)\  )  ( 
   \____) (_____)(_____)(_/\/\_)(___/ \___)(__)(__)(_)\_)
-};
-   	print color("red") . "\t\t\t(1337.today)" . color("reset");
-   	print "
+    };
+    print color("red") . "\t\t\t(1337.today)" . color("reset");
+    print "
    
     --=[". color("BLUE") . "OWASP JoomScan". color("reset") ."
     +---++---==[Version : "
-   	. color("red"). "$version\n". color("reset") . "    +---++---==[Update Date : [". color("red") . "$update". color("reset") . "]
+    . color("red"). "$version\n". color("reset") . "    +---++---==[Update Date : [". color("red") . "$update". color("reset") . "]
     +---++---==[Authors : ". color("red") . "$author". color("reset")."
     --=[Code name : ". color("red") . "$codename". color("reset")."\n    \@OWASP_JoomScan , \@rezesp , \@Ali_Razmjo0 , \@OWASP\n\n";
-    	
+}
+
 if(!defined $ARGV[0]){
- 
     print color("cyan");
     printf "\n   Usage: 
     	joomscan.pl <target>
-   	joomscan.pl -u http://target.com/joomla
-      joomscan.pl -m targets.txt
+    	joomscan.pl -u http://target.com/joomla
+    	joomscan.pl -m targets.txt
    
    
       Options: 
-   	joomscan.pl --help\n\n";
+    	joomscan.pl --help\n\n";
     print color("reset");
     exit(1);
 }
@@ -57,7 +58,12 @@ Usage:	$0 [options]
            Proxy example: --proxy http://127.0.0.1:8080
                                   https://127.0.0.1:443
                                   socks://127.0.0.1:414
-                       
+
+--threads | -t <Number>         |   Number of concurrent worker threads (default: 5).
+--delay <Seconds>               |   Delay between requests in seconds (e.g. 0.5).
+--json                          |   Output results as JSON / SARIF to STDOUT.
+--silent                        |   Silent mode (suppress banners and scanning logs).
+
 --about                         |   About Author
 --update                        |   Update to the latest version.
 --help | -h                     |   This help screen.
@@ -66,7 +72,7 @@ Usage:	$0 [options]
 
 ";
 	print color("reset");
-	exit(1);
+	exit(0);
 }
 sub about
 {
@@ -78,7 +84,7 @@ sub about
    Issues         :   https://github.com/rezasp/joomscan/issues
     \n\n";
 	print color("reset");
-	exit(1);
+	exit(0);
 }
 sub update
 {
@@ -100,9 +106,13 @@ GetOptions(
   'timeout=s' => \$timeout,
   'proxy=s' => \$proxy,
   'cookie=s' => \$cookie,
+  'threads|t=i' => \$threads,
+  'delay=s' => \$delay,
+  'json' => sub { $json_output = 1; $silent = 1; },
+  'silent' => sub { $silent = 1; },
   'u|url=s' => \$target,
   'm|mass=s' => \$urlfile,
-  'version' => sub { print "\n\nVersion : $version\n\n";exit; },
+  'version' => sub { print "\n\nVersion : $version\n\n";exit(0); },
 
 );
 if(($target !~ /\S/)&&($urlfile !~ /\S/)){

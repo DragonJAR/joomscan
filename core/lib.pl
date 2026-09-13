@@ -100,7 +100,16 @@ sub probe_get {
     my ($path) = @_;
     my $url = "$target/$path";
     unless(exists $resp_cache{$url}){
+        if(defined $delay && $delay > 0){
+            select(undef, undef, undef, 0 + $delay);
+        }
         my $res = $ua->get($url);
+        if(defined $res && ($res->code == 429 || $res->code == 503)){
+            my $retry = $res->header('Retry-After');
+            my $wait_time = (defined $retry && $retry =~ /^\d+$/ && $retry <= 10) ? $retry : 1.5;
+            select(undef, undef, undef, 0 + $wait_time);
+            $res = $ua->get($url);
+        }
         $resp_cache{$url} = $res;
     }
     my $res = $resp_cache{$url};
@@ -118,7 +127,16 @@ sub probe_head {
         return (0, "") unless defined $res;
         return ($res->code, $res->header('Content-Type') // "");
     }
+    if(defined $delay && $delay > 0){
+        select(undef, undef, undef, 0 + $delay);
+    }
     my $res = $ua->head($url);
+    if(defined $res && ($res->code == 429 || $res->code == 503)){
+        my $retry = $res->header('Retry-After');
+        my $wait_time = (defined $retry && $retry =~ /^\d+$/ && $retry <= 10) ? $retry : 1.5;
+        select(undef, undef, undef, 0 + $wait_time);
+        $res = $ua->head($url);
+    }
     return (0, "") unless defined $res;
     return ($res->code, $res->header('Content-Type') // "");
 }
@@ -151,5 +169,63 @@ sub looks_like_config_leak {
     return "";
 }
 
+sub run_pool {
+    my ($items, $worker_fn, $workers) = @_;
+    $workers = $threads if (!defined $workers || $workers <= 0);
+    $workers = 5 unless defined $workers && $workers > 0;
+    return [] unless defined $items && @$items;
+    $workers = @$items if @$items < $workers;
+
+    if ($workers <= 1 || $^O eq 'MSWin32') {
+        my @res;
+        for my $item (@$items) {
+            my $r = $worker_fn->($item);
+            push @res, $r if defined $r;
+        }
+        return \@res;
+    }
+
+    pipe(my $reader, my $writer) or die "pipe: $!";
+    my $chunk_size = int((@$items + $workers - 1) / $workers);
+    my @pids;
+
+    for (my $w = 0; $w < $workers; $w++) {
+        my $start = $w * $chunk_size;
+        last if $start >= @$items;
+        my $end = $start + $chunk_size - 1;
+        $end = $#$items if $end > $#$items;
+        my @chunk = @$items[$start .. $end];
+
+        my $pid = fork();
+        unless (defined $pid) {
+            for my $item (@chunk) {
+                my $r = $worker_fn->($item);
+                print $writer "$r\n" if defined $r;
+            }
+            next;
+        }
+        if ($pid == 0) {
+            close $reader;
+            for my $item (@chunk) {
+                my $r = $worker_fn->($item);
+                print $writer "$r\n" if defined $r;
+            }
+            close $writer;
+            exit 0;
+        }
+        push @pids, $pid;
+    }
+    close $writer;
+    my @results;
+    while (my $line = <$reader>) {
+        chomp $line;
+        push @results, $line if $line ne "";
+    }
+    close $reader;
+    waitpid($_, 0) for @pids;
+    return \@results;
 }
 
+}
+
+1;
