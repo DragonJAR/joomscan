@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use HTTP::Response;
-use Test::More tests => 28;
+use Test::More tests => 32;
 
 our $mepath = ".";
 require "./core/lib.pl";
@@ -84,5 +84,21 @@ $resp_cache{"https://uftm.edu.br/proplan/"} = HTTP::Response->new(200, "OK", ["C
 $resp_cache{"https://uftm.edu.br/proplan/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(404, "Not Found", [], "404 Not Found");
 $resp_cache{"https://uftm.edu.br/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/xml"], $fake_xml);
 is(detect_joomla_version("https://uftm.edu.br/proplan"), "Joomla 3.4.8", "Detects core version via root manifest fallback");
+
+# Joomla 6 detection via joomla.asset.json
+my $j6_asset_json = '{"name":"joomla","version":"6.1.3","description":"Joomla! CMS"}';
+$resp_cache{"https://modern-j6.org/"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/html"], "<html><body>J6 Site</body></html>");
+$resp_cache{"https://modern-j6.org/media/system/joomla.asset.json"} = HTTP::Response->new(200, "OK", ["Content-Type" => "application/json"], $j6_asset_json);
+is(detect_joomla_version("https://modern-j6.org"), "Joomla 6.1.3", "Detects modern Joomla 6.1.3 via joomla.asset.json");
+
+# Joomla 6 detection via core XML manifest
+my $j6_xml = '<?xml version="1.0" encoding="UTF-8"?><extension version="6.1" type="file"><name>files_joomla</name><version>6.1.3</version></extension>';
+$resp_cache{"https://j6-manifest.org/"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/html"], "<html><body>Site</body></html>");
+$resp_cache{"https://j6-manifest.org/administrator/manifests/files/joomla.xml"} = HTTP::Response->new(200, "OK", ["Content-Type" => "text/xml"], $j6_xml);
+is(detect_joomla_version("https://j6-manifest.org"), "Joomla 6.1.3", "Detects Joomla 6.1.3 via core XML manifest");
+
+# Joomla 6 vulnerability range checks
+is(version_in_range("6.1.2", "6.0.0", "6.1.2"), 1, "Joomla 6.1.2 falls within unpatched 6.0.0-6.1.2 CVE range");
+is(version_in_range("6.1.3", "6.0.0", "6.1.2"), "", "Joomla 6.1.3 is not in 6.0.0-6.1.2 (fixed)");
 
 

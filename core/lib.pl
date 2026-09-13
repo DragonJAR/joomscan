@@ -361,7 +361,7 @@ sub detect_joomla_version {
         }
     }
 
-    # 3. Modern Joomla 4 & 5 Asset Manifests
+    # 3. Modern Joomla 4, 5 & 6 Asset Manifests
     my ($aj_code, $aj_body) = probe_url_with_root_fallback('media/system/joomla.asset.json');
     if ($aj_code == 200 && !is_soft404($aj_body, $aj_code)) {
         if ($aj_body =~ /"version"\s*:\s*"([0-9]+(?:\.[0-9]+)+)"/i) {
