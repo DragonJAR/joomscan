@@ -74,13 +74,11 @@ open(my $fh, '>:encoding(UTF-8)', "reports/$tmptarget/$tmptarget\_report\_$year-
 print $fh "$html";
 close $fh;
 
-#SARIF v2.1.0 output (DevSecOps pipelines)
 {
     my @sarif_results = ();
     for (my $i = 0 ; $i <= $#tflog_snap ; $i++) {
         my $entry = $tflog_snap[$i];
         next unless defined $entry && $entry ne "";
-        # Skip negative / not-found checks (1337false) from SARIF vulnerability results
         next if ($entry =~ /^1337false/);
         $entry =~ s/\[\+\+\]\s*//g;
         next if $entry =~ /^\s*$/;
@@ -92,8 +90,6 @@ close $fh;
             $level = "note";
         }
 
-        # Use CVE-ID as ruleId when available; otherwise fall back to a
-        # truncated description (stable enough for non-CVE findings).
         my $rule;
         if($entry =~ /(CVE-\d{4}-\d+)/i){
             $rule = $1;

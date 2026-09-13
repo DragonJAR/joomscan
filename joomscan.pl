@@ -44,8 +44,6 @@ sub interrupt {
     exit 0;
 }
 
-# Initialise CLI-flag defaults so numeric comparisons don't warn under perl -w
-# when a flag is not passed (Getopt::Long only sets the var when the flag appears).
 $randomagent=0; $jversion=0; $components=0; $noreport=0;
 
 do "$mepath/core/header.pl";

@@ -21,9 +21,6 @@ $ppp=$1;
     }
 }
 
-# Modern Joomla (3.x / 4.x / 5.x / 6.x) fingerprinting:
-#  1) <meta name="generator" content="Joomla! X.Y.Z ..."> in HTML (3.x and earlier)
-#  2) RSS/Atom feeds publish the full <generator>Joomla! X.Y.Z</generator> tag
 if($ver !~ m/\./i){
     if($source =~ /<meta[^>]*name=[\"']generator[\"'][^>]*content=[\"']Joomla!\s*([0-9]+(\.[0-9]+)+)/i){
         $ver="Joomla $1";
@@ -75,7 +72,6 @@ if($ver !~ m/\./i){
     }
 }
 
-# Joomla 4.x / 5.x / 6.x fingerprinting (modern sys.php config includes <meta-data><version>)
 if($ver !~ m/\./i){
     @vers = ('administrator/manifests/files/joomla.xml','language/en-GB/en-GB.xml','language/en-GB/langmetadata.xml','media/system/joomla.asset.json');
     foreach $verc(@vers){

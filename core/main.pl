@@ -71,12 +71,10 @@ if($proxy!=1){
 $ua->cookie_jar({}) if($cookie!=1);
 $ua->default_header('Cookie'=> "$cookie") if($cookie!=1);
 
-# Keep-alive: reuse TCP connections across requests (major speedup for scans
-# that make hundreds of sequential requests to the same host).
 eval { $ua->conn_cache(LWP::ConnCache->new) };
 
 our @dlog = (); our @tflog = ();
-%resp_cache = ();   # clear per-scan HTTP response cache (mass mode)
+%resp_cache = ();
 
 our $log="";
 sub dprint{

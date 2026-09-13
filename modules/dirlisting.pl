@@ -2,7 +2,6 @@ dprint("Checking directory listing and target response behaviour");
 
 do "$mepath/core/lib.pl";
 
-# Classify the "not found" body once for diagnostics, then reuse the helper.
 my ($code404, $body404) = probe_get("thispathdoesnotexist12345");
 if($code404 == 200 && is_soft404($body404, $code404)){
     fprint("Target returns HTTP 200 for non-existent paths (soft-404) - path checks may have false positives");
