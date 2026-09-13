@@ -5,7 +5,7 @@
 [![Perl](https://img.shields.io/badge/perl-5.x-yellow.svg)](https://www.perl.org)
 [![Joomla Support](https://img.shields.io/badge/joomla-1.0%20to%206.1.3-blue.svg)](https://www.joomla.org)
 [![Tests](https://img.shields.io/badge/tests-89%20passed-brightgreen.svg)](t/)
-[![Author](https://img.shields.io/badge/author-DragonJAR%20SAS-orange.svg)](https://www.DragonJAR.org)
+[![Maintained by](https://img.shields.io/badge/maintained%20by-DragonJAR%20SAS-orange.svg)](https://www.DragonJAR.org)
 [![Español](https://img.shields.io/badge/read%20in-Espa%C3%B1ol-blue.svg)](README.es.md)
 
 > Modern, reliable Joomla vulnerability scanner and security auditor. Combines multi-tier version detection (Joomla 1.0 to 6.1.3), server baseline calibration to eliminate false positives, mathematical SemVer CVE matching, concurrent extension auditing, and responsive offline HTML reporting into a lightweight, DRY architecture.
@@ -209,25 +209,25 @@ Test coverage includes:
 
 ---
 
-## 👥 Authors & Community
+## 👥 Authors & Maintainers
 
-- **Original Authors & Project Leaders**:
-  - Mohammad Reza Espargham ([@rezesp](https://twitter.com/rezesp))
-  - Ali Razmjoo ([@Ali_Razmjo0](https://twitter.com/Ali_Razmjo0))
-- **Official Resources**:
-  - [OWASP Project Page](https://www.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project)
-  - [GitHub Repository](https://github.com/DragonJAR/joomscan)
-  - [Issue Tracker](https://github.com/DragonJAR/joomscan/issues)
-  - [YouTube Introduction](https://www.youtube.com/watch?v=Ik2CJ9LkuoI)
+### 👨‍💻 Original Authors & Project Leaders
+- **Mohammad Reza Espargham** ([@rezesp](https://twitter.com/rezesp))
+- **Ali Razmjoo** ([@Ali_Razmjo0](https://twitter.com/Ali_Razmjo0))
+
+### 🛠️ Project Revival & Maintenance
+**DragonJAR SAS** — [https://www.DragonJAR.org](https://www.DragonJAR.org)
+
+[Experts in IT security services, proactive validation, and offensive security.](https://www.dragonjar.org/servicios-de-seguridad-informatica)
+
+### 🌐 Official Resources
+- [OWASP Project Page](https://www.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project)
+- [GitHub Repository](https://github.com/DragonJAR/joomscan)
+- [Issue Tracker](https://github.com/DragonJAR/joomscan/issues)
+- [YouTube Introduction](https://www.youtube.com/watch?v=Ik2CJ9LkuoI)
 
 ---
 
 ## 📄 License
 
 This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**DragonJAR SAS** — [https://www.DragonJAR.org](https://www.DragonJAR.org)
-
-[Experts in IT security services, proactive validation, and offensive security.](https://www.dragonjar.org/servicios-de-seguridad-informatica)
