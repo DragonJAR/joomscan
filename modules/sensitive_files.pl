@@ -35,29 +35,15 @@ my @sens_files = (
     'administrator/logs/',
 );
 
-my $fnd="";
+my $fnd = "";
 foreach my $sf (@sens_files){
     my ($code, $body) = probe_get($sf);
     next unless $code == 200;
     next if is_soft404($body, $code);
 
-    my $note = "";
-    if($sf =~ /\.git\/config/ and $body =~ /\[(remote|core|user)\]/i){
-        $note = " - possible Git repository exposure";
-    }elsif($sf =~ /\.env/ and $body =~ /=/){
-        $note = " - possible environment variable leak";
-    }elsif($sf =~ /configuration\.php|\.bak|\.swp|\.orig|\.save|\.old/ and $body =~ /(dbtype|dbprefix|\$host|\$user|\$password|ftp_pass)/i){
-        $note = " - possible configuration backup leak";
-    }elsif($sf =~ /installation\// and $body =~ /install|configuration|joomla/i){
-        $note = " - installer may still be present";
-    }elsif($sf =~ /akeeba/ and $body =~ /(backup|kickstart|akeeba)/i){
-        $note = " - Akeeba backup artifact may be exposed";
-    }elsif($sf =~ /\/$/){
-        next unless ($body =~ /<title>Index of/i or $body =~ /Last modified<\/a>/i or $body =~ /Parent Directory<\/a>/i);
-        $note = " - directory listing is enabled";
-    }
-    $fnd .= "Path : $target/$sf\n$note\n" if $note;
-    $fnd .= "Path : $target/$sf\n" if !$note;
+    my ($ok, $note) = verify_sensitive_file($sf, $code, $body);
+    next unless $ok;
+    $fnd .= "Path : $target/$sf\n$note\n";
 }
 if($fnd){
     tprint("Sensitive files and / or VCS metadata found\n$fnd");

@@ -2,9 +2,10 @@ dprint("Checking directory listing and target response behaviour");
 
 do "$mepath/core/lib.pl";
 
+my $status_msg = "";
 my ($code404, $body404) = probe_get("thispathdoesnotexist12345");
 if($code404 == 200 && is_soft404($body404, $code404)){
-    fprint("Target returns HTTP 200 for non-existent paths (soft-404) - path checks may have false positives");
+    $status_msg = "Target returns HTTP 200 for non-existent paths (soft-404) - baseline calibration active.\n";
 }
 
 my @dirl = ('administrator/components','components','administrator/modules','modules',
@@ -20,7 +21,7 @@ foreach my $dir (@dirl){
     }
 }
 if($idx){
-    tprint("Directories with index listing enabled : \n$idx");
+    tprint($status_msg . "Directories with index listing enabled : \n$idx");
 }else{
-    fprint("Directory listing is not enabled");
+    fprint($status_msg . "Directory listing is not enabled");
 }
