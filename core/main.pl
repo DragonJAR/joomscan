@@ -74,6 +74,7 @@ $ua->default_header('Cookie'=> "$cookie") if($cookie!=1);
 eval { $ua->conn_cache(LWP::ConnCache->new) };
 
 our @dlog = (); our @tflog = ();
+our @FINDINGS; @FINDINGS = ();
 %resp_cache = ();
 
 our $log="";

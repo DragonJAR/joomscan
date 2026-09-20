@@ -1,5 +1,7 @@
 $fwtf=0;
-my $wres = $ua->get("$target/");
+do "$mepath/core/lib.pl";
+my ($wcode, $wbody) = probe_get("");
+my $wres = $resp_cache{"$target/"} // $resp_cache{$target};
 $source = defined $wres ? $wres->headers_as_string : "";
 dprint("FireWall Detector");
 if ($source =~ /cloudflare-nginx/g or $source =~ /CF-Chl-Bypass/g or $source =~ /Server\: cloudflare/g or $source =~ /__cfduid/g ) {
@@ -92,7 +94,8 @@ if ($source =~ /cloudflare-nginx/g or $source =~ /CF-Chl-Bypass/g or $source =~ 
 }
 
 
-my $mres = $ua->get("$target/../../etc");
+my ($mcode, $mbody) = probe_get("../../etc");
+my $mres = $resp_cache{"$target/../../etc"};
 $source = defined $mres ? $mres->headers_as_string : "";
 if ($source =~ /mod_security/g or $source =~ /Mod_Security/g or $source =~ /NOYB/g) {
 	tprint("Firewall detected : Mod_Security");

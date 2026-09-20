@@ -92,6 +92,7 @@ sub run_checks {
       do "$mepath/modules/configfinder.pl"; 
       do "$mepath/exploit/components.pl" if($components==1 || @found_components);
       do "$mepath/modules/extension_auditor.pl" if($components==1 || @found_components);
+      do "$mepath/modules/validation.pl";
 
    }
 

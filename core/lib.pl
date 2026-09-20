@@ -470,6 +470,221 @@ sub looks_like_config_leak {
     return "";
 }
 
+# --- Shared declarative baseline-header table (single source of truth: modules/security_headers.pl + modules/validation.pl) ---
+our %SECURITY_HEADERS = (
+    'Strict-Transport-Security' => {
+        desc    => 'HSTS',
+        pattern => qr/max-age=\s*\d{6,}/i,
+        okay    => "HSTS with max-age >= 1 week recommended (e.g. max-age=31536000; includeSubDomains; preload)",
+    },
+    'Content-Security-Policy'   => {
+        desc    => 'CSP',
+        pattern => qr/(default-src|script-src|object-src)/i,
+        okay    => "CSP with default-src 'self' recommended",
+    },
+    'X-Frame-Options'           => {
+        desc    => 'anti-clickjacking',
+        pattern => qr/(SAMEORIGIN|DENY)/i,
+        okay    => "X-Frame-Options: SAMEORIGIN or DENY recommended",
+    },
+    'X-Content-Type-Options'    => {
+        desc    => 'MIME-sniffing protection',
+        pattern => qr/nosniff/i,
+        okay    => "X-Content-Type-Options: nosniff recommended",
+    },
+    'Referrer-Policy'           => {
+        desc    => 'referrer leakage control',
+        pattern => qr/(strict-origin-when-cross-origin|no-referrer|same-origin)/i,
+        okay    => "Referrer-Policy: strict-origin-when-cross-origin recommended",
+    },
+    'Permissions-Policy'        => {
+        desc    => 'browser feature restriction',
+        pattern => qr/(camera|microphone|geolocation)/i,
+        okay    => "Permissions-Policy restricting camera/microphone/geolocation recommended",
+    },
+);
+
+# --- Deterministic validation helpers (pure functions over one HTTP response; unit-tested in t/07_validation.t) ---
+
+# validate_headers($res): verdict per baseline header. status: compliant | weak | missing
+sub validate_headers {
+    my ($res) = @_;
+    my @out;
+    for my $h (sort keys %SECURITY_HEADERS) {
+        my $v = defined $res ? $res->header($h) : undef;
+        $v = "" unless defined $v;
+        my $status = "missing";
+        if ($v ne "") {
+            $status = ($v =~ $SECURITY_HEADERS{$h}{pattern}) ? "compliant" : "weak";
+        }
+        push @out, { header => $h, value => $v, status => $status };
+    }
+    return \@out;
+}
+
+# validate_isolation_headers($res): verdict shape for cross-origin isolation headers
+# (COOP/COEP/CORP). All missing on an HTTPS page embedding third-party content = weak isolation (WSTG 4.2.4).
+sub validate_isolation_headers {
+    my ($res) = @_;
+    my @spec = (
+        ['Cross-Origin-Opener-Policy',   'same-origin',                  'COOP'],
+        ['Cross-Origin-Embedder-Policy', 'require-corp|credentialless',  'COEP'],
+        ['Cross-Origin-Resource-Policy', 'same-origin|same-site',        'CORP'],
+    );
+    my @out;
+    for my $e (@spec) {
+        my ($h, $pat, $short) = @$e;
+        my $v = defined $res ? $res->header($h) : undef;
+        $v = "" unless defined $v;
+        my $status = "missing";
+        if ($v ne "") {
+            $status = ($v =~ /$pat/i) ? "compliant" : "weak";
+        }
+        push @out, { header => $h, short => $short, value => $v, status => $status };
+    }
+    return \@out;
+}
+
+# validate_mixed_content($body, $scheme): sorted unique http:// asset URLs loaded from an
+# HTTPS page (src/href/action attributes). Namespace and feed references are excluded.
+sub validate_mixed_content {
+    my ($body, $scheme) = @_;
+    return [] if !defined $body || $body eq "";
+    return [] if defined $scheme && $scheme ne "" && $scheme ne "https";
+    my %seen;
+    my $base = get_root_url($target) . "/";
+    while ($body =~ /<\w+\b[^>]*?\b(?:src|href|action)\s*=\s*["'](http:\/\/[^"'\s>]+)["']/gi) {
+        my $u = $1;
+        next if $u =~ /\.(?:xml|rss|dtd)\b/i;
+        next if $u =~ /(?:w3\.org|xmlns|opensearchdescription)/i;
+        $u = $base . $u if $u =~ m#^/#;
+        $seen{$u} = 1;
+    }
+    return [sort keys %seen];
+}
+
+# validate_sri($body): sorted unique external script/stylesheet URLs lacking an integrity
+# attribute (CWE-353). Same-origin, root-relative, data: and inline URLs are not reported.
+sub validate_sri {
+    my ($body) = @_;
+    return [] if !defined $body || $body eq "";
+    my $base = get_root_url($target);
+    my %seen;
+    while ($body =~ /<(\w+)\b([^>]*)>/gi) {
+        my ($tag, $attrs) = ($1, $2);
+        next unless $tag =~ /^(?:script|link)$/i;
+        next if $attrs =~ /\bintegrity\s*=/i;
+        my $url;
+        if ($tag =~ /^script$/i) {
+            ($url) = $attrs =~ /\bsrc\s*=\s*["']([^"']+)["']/i;
+        } else {
+            my ($rel) = $attrs =~ /\brel\s*=\s*["']([^"']*)["']/i;
+            if (defined $rel && $rel =~ /stylesheet/i) {
+                ($url) = $attrs =~ /\bhref\s*=\s*["']([^"']+)["']/i;
+            }
+        }
+        next unless defined $url;
+        next if $url =~ m#^(?:/|\.|\#|data:|javascript:)#i;
+        next if defined $base && $base ne "" && $url =~ /^\Q$base\E/i;
+        next unless $url =~ m#^(?:https?:)?//#i;
+        $seen{$url} = 1;
+    }
+    return [sort keys %seen];
+}
+
+# --- Joomla-specific oracles (pure classifiers over HTTP responses; unit-tested in t/07_validation.t) ---
+
+# extract_templates($body): sorted unique template directory names from asset URLs
+# (/templates/<name>/...). Template names are filesystem tokens ([A-Za-z0-9_-]+).
+sub extract_templates {
+    my ($body) = @_;
+    return [] if !defined $body || $body eq "";
+    my %seen;
+    while ($body =~ m#/templates/([A-Za-z0-9_\-]+)/#gi) { $seen{lc $1} = 1; }
+    return [sort keys %seen];
+}
+
+# parse_template_manifest($body): <version> from a templateDetails.xml manifest.
+# Requires the template-install signature so arbitrary XML cannot fake it.
+sub parse_template_manifest {
+    my ($body) = @_;
+    return "" if !defined $body || $body eq "";
+    return "" unless $body =~ /template-install\.dtd|type="template"/i;
+    my ($v) = $body =~ m#<version>([^<]+)</version>#i;
+    $v = "" unless defined $v;
+    $v =~ s/^\s+|\s+$//g;
+    return $v;
+}
+
+# parse_composer_inventory($body): "name version" pairs from composer installed.json.
+sub parse_composer_inventory {
+    my ($body) = @_;
+    return [] if !defined $body || $body eq "";
+    return [] unless $body =~ /^\s*[\[{]/;
+    my @out;
+    while ($body =~ /"name"\s*:\s*"([^"]+)"\s*,\s*"version"\s*:\s*"([^"]+)"/gi) {
+        push @out, "$1 $2";
+    }
+    return \@out;
+}
+
+# has_modline_disclosure($body): Joomla only emits module-position markers (the
+# "modline" wrapper) when the page was rendered with the ?tp=1 debug parameter.
+sub has_modline_disclosure {
+    my ($body) = @_;
+    return 0 if !defined $body || $body eq "";
+    return ($body =~ /modline/i) ? 1 : 0;
+}
+
+# looks_like_contenthistory($body): markers of a contenthistory view/JSON payload
+# served without authentication. Login walls and catch-all templates never contain them.
+sub looks_like_contenthistory {
+    my ($body) = @_;
+    return 0 if !defined $body || $body eq "";
+    return ($body =~ /versionsList|loadhistory|history\.(?:add|keep)|"success"\s*:\s*true\s*,\s*"data"/i) ? 1 : 0;
+}
+
+# validate_session_headers($res): Joomla state headers that leak session posture to
+# shared caches/CDNs (X-Logged-In). status: disclosed | absent.
+sub validate_session_headers {
+    my ($res) = @_;
+    my @out;
+    for my $h ('X-Logged-In') {
+        my $v = defined $res ? $res->header($h) : undef;
+        push @out, { header => $h, value => (defined $v ? $v : ""), status => (defined $v && $v ne "") ? "disclosed" : "absent" };
+    }
+    return \@out;
+}
+
+# --- Structured finding ledger (single source of truth for reports; modules append via record_finding, report.pl serializes) ---
+our @FINDINGS;
+
+sub record_finding {
+    my %f = (
+        id => "", title => "", state => "LIKELY", severity => "INFO",
+        cwe => "", owasp => "", evidence => "", remediation => "", @_
+    );
+    $f{target} = $target // "";
+    $f{id} = sprintf("JOOM-%03d", scalar(@FINDINGS) + 1) if $f{id} eq "";
+    push @FINDINGS, \%f;
+    return $f{id};
+}
+
+sub findings_snapshot {
+    my ($mode) = @_;
+    my @snap = map { { %{$_} } } @FINDINGS;
+    return \@snap unless defined $mode && $mode eq "json";
+    # canonical(1): key-sorted, character semantics (safe for a :encoding(UTF-8) handle;
+    # encode_json would die on wide chars in evidence).
+    my $json = eval { require JSON::PP; JSON::PP->new->canonical(1)->encode(\@snap) };
+    return $json if defined $json;
+    my $esc = sub { my $s = $_[0] // ""; $s =~ s/\\/\\\\/g; $s =~ s/"/\\"/g; $s =~ s/[\r\n]+/ /g; $s =~ s/([\x00-\x1f])/sprintf "\\u%04x", ord $1/ge; '"' . $s . '"'; };
+    my @parts = map {
+        "{" . join(",", map { $esc->($_) . ":" . $esc->($_->{$_}) } sort keys %$_) . "}"
+    } @snap;
+    return "[" . join(",", @parts) . "]";
+}
+
 sub run_pool {
     my ($items, $worker_fn, $workers) = @_;
     $workers = $threads if (!defined $workers || $workers <= 0);

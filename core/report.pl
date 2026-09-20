@@ -16,6 +16,17 @@ our $li = $tmptarget;
 mkdir "reports" unless -d "reports";
 mkdir "reports/$tmptarget";
 
+# 4. Structured finding ledger (modules/validation.pl appends via record_finding)
+{
+    my $json = findings_snapshot("json");
+    if (defined $json && $json ne "") {
+        my $jfile = "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.findings.json";
+        open(my $jfh, '>:encoding(UTF-8)', $jfile) or warn "cannot write $jfile: $!";
+        print $jfh "$json\n";
+        close $jfh;
+    }
+}
+
 # 1. Plain text report
 open(my $fh_txt, '>:encoding(UTF-8)', "reports/$tmptarget/$tmptarget\_report\_$year-$mon-$mday\_at\_$hour.$min.$sec.txt");
 our $log = "$log";

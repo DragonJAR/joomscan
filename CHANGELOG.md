@@ -13,8 +13,9 @@ OWASP JoomScan 0.0.8 [2026 Refresh]
   dynamic 5-dimension security posture scoring, and 24-hour remediation plans
 * Concurrency & rate-limiting: worker pool (run_pool) with configurable threads (--threads),
   request delay (--delay), and automatic backoff on HTTP 429/503
-* Automated test suite (t/): 89 unit tests across 6 test suites validating SemVer logic,
-  lifecycle states, CLI options, db integrity, worker pool, and probe verifiers
+* Automated test suite (t/): 126 unit tests across 7 test suites validating SemVer logic,
+  lifecycle states, CLI options, db integrity, worker pool, probe verifiers, and the
+  reusable validation oracles + corevul.txt 3.4.8 coverage regression
 * Documentation: bilingual README (English / Spanish) designed to DragonJAR skill standards
 * New: passive extension discovery from frontend DOM assets
 * New: extension sensitive-endpoint auditor (data-driven, non-destructive probes
@@ -28,6 +29,11 @@ OWASP JoomScan 0.0.8 [2026 Refresh]
 * New: configuration.php hardening flags check (debug, error_reporting, force_ssl,
   session_handler) when a readable copy leaks
 * New: SARIF v2.1.0 machine-readable report alongside txt/html
+* New: deterministic validation layer (modules/validation.pl) with a structured
+  finding ledger (findings.json): baseline + cross-origin isolation headers, mixed
+  content, SRI, core/template manifest and composer inventory disclosure, ?tp=1
+  module-position leak, unauthenticated com_contenthistory probes, session-state
+  header leakage - all built on reusable pure-classifier oracles in core/lib.pl
 * Improved Joomla version detection for modern releases (4.x/5.x/6.x via
   langmetadata.xml, joomla.asset.json, RSS feed <generator>, meta generator tag)
 * Admin finder extended: protection-plugin footprint (jSecure/AdminExile) and
